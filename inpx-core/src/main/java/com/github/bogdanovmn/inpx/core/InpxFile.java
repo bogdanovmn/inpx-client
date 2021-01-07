@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -16,38 +17,9 @@ public class InpxFile {
 		this.fileName = fileName;
 	}
 
-	public void printStatistic() throws IOException {
-		InpxIndexStatistic statistic = fileStatistic();
-
-		LOG.info("Total statistic:");
-
-		long totalCount = statistic.totalCount();
-		long totalSize = statistic.totalSize();
-		long ruCount = statistic.languageCount("ru");
-		long ruSize = statistic.languageSize("ru");
-
-		LOG.info(
-			"[RU] books: {} ({}%) size:{} ({}%)",
-				ruCount,
-				(100 * ruCount) / totalCount,
-				new BytesValue(ruSize).shortString(),
-				(100 * ruSize) / totalSize
-		);
-
-		long otherCount = statistic.languageCountExceptOf("ru");
-		long otherSize = statistic.languageSizeExceptOf("ru");
-
-		LOG.info(
-			"[Other] books: {} ({}%) size:{} ({}%)",
-				otherCount,
-				(100 * otherCount) / totalCount,
-				new BytesValue(otherSize).shortString(),
-				(100 * otherSize) / totalSize
-		);
-	}
-
-	private InpxIndexStatistic fileStatistic() throws IOException {
+	public InpxIndexStatistic statistic() throws IOException {
 		InpxIndexStatistic statistic = InpxIndexStatistic.empty();
+		InpxBookInstances bookInstances = new InpxBookInstances();
 
 		try (ZipFile zf = new ZipFile(fileName)) {
 
@@ -72,15 +44,30 @@ public class InpxFile {
 					continue;
 				}
 
-				InpxIndexStatistic subStatistic = new InpxSubIndexFile(
+				InpxSubIndex subIndex = new InpxSubIndexFile(
 					new InpxSubIndexFileInputStream(
 						zf.getInputStream(file)
 					)
-				).index()
-					.statistic();
+				).index();
+				InpxIndexStatistic subStatistic = subIndex.statistic();
+				bookInstances.merge(subIndex.bookInstances());
 
 				statistic.merge(subStatistic);
 			}
+
+			Set<String> duplicatesIdSet = bookInstances.duplicatesNaturalIdSet();
+			LOG.info(
+				"Book duplicates: {}, size: {}",
+					duplicatesIdSet.size(),
+					new BytesValue(
+						duplicatesIdSet.stream()
+							.mapToLong(
+								id -> bookInstances.getByNaturalId(id).stream()
+										.mapToLong(InpxSubIndexFileRecord::fileSize).max().orElse(0)
+							)
+							.sum()
+					).shortString()
+			);
 		}
 		return statistic;
 	}

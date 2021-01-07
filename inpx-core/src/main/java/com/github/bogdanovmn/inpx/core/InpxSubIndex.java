@@ -1,10 +1,10 @@
 package com.github.bogdanovmn.inpx.core;
 
 import com.github.bogdanovmn.common.core.StringCounter;
-import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 class InpxSubIndex {
@@ -12,6 +12,17 @@ class InpxSubIndex {
 
 	InpxSubIndex(List<InpxSubIndexFileRecord> records) {
 		this.records = records;
+	}
+
+	InpxBookInstances bookInstances() {
+		return new InpxBookInstances(
+			records.stream()
+				.collect(
+					Collectors.groupingBy(
+						InpxSubIndexFileRecord::naturalBookId
+					)
+				)
+		);
 	}
 
 	InpxIndexStatistic statistic() {
@@ -28,17 +39,5 @@ class InpxSubIndex {
 			.language(language)
 			.languageSize(languageSize)
 		.build();
-	}
-
-	void printStatistic() {
-		InpxIndexStatistic statistic = statistic();
-		statistic.languages().forEach(
-			lang -> LOG.info(
-				"{}: count={} size={}",
-				lang,
-				statistic.languageCount(lang),
-				new BytesValue(statistic.languageSize(lang)).shortString()
-			)
-		);
 	}
 }

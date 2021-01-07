@@ -1,14 +1,17 @@
 package com.github.bogdanovmn.inpx.core;
 
 import com.github.bogdanovmn.common.core.StringCounter;
+import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Builder
-class InpxIndexStatistic {
+public class InpxIndexStatistic {
 	@Builder.Default
 	private StringCounter language = new StringCounter();
 	@Builder.Default
@@ -64,6 +67,34 @@ class InpxIndexStatistic {
 				language.increment(lang, subStatistic.languageCount(lang));
 				languageSize.increment(lang, subStatistic.languageSize(lang));
 			}
+		);
+	}
+
+	public void print() {
+		LOG.info("Total statistic:");
+
+		long totalCount = totalCount();
+		long totalSize = totalSize();
+		long ruCount = languageCount("ru");
+		long ruSize = languageSize("ru");
+
+		LOG.info(
+			"[RU] books: {} ({}%) size: {} ({}%)",
+			ruCount,
+			(100 * ruCount) / totalCount,
+			new BytesValue(ruSize).shortString(),
+			(100 * ruSize) / totalSize
+		);
+
+		long otherCount = languageCountExceptOf("ru");
+		long otherSize = languageSizeExceptOf("ru");
+
+		LOG.info(
+			"[Other] books: {} ({}%) size: {} ({}%)",
+			otherCount,
+			(100 * otherCount) / totalCount,
+			new BytesValue(otherSize).shortString(),
+			(100 * otherSize) / totalSize
 		);
 	}
 }

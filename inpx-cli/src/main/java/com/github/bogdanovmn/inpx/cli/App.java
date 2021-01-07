@@ -19,7 +19,7 @@ public class App {
 				cmdLine -> {
 					new InpxFile(
 						cmdLine.getOptionValue(CMD_OPTION__INDEX_FILE)
-					).printStatistic();
+					).statistic().print();
 				}
 			).build().run();
 	}
