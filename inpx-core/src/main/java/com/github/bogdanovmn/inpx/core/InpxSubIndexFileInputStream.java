@@ -16,9 +16,9 @@ class InpxSubIndexFileInputStream implements AutoCloseable {
 		);
 	}
 
-	List<InpxSubIndexFileRecord> records() {
+	List<InpFileRecord> records() {
 		return input.lines().map(
-			InpxSubIndexFileRecord::new
+			InpFileRecord::new
 		).collect(
 			Collectors.toList()
 		);

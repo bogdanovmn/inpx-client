@@ -2,34 +2,48 @@ package com.github.bogdanovmn.inpx.core;
 
 import com.github.bogdanovmn.common.core.StringCounter;
 import com.github.bogdanovmn.humanreadablevalues.BytesValue;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class InpxIndexStatistic {
 	@Builder.Default
 	private StringCounter language = new StringCounter();
 	@Builder.Default
 	private StringCounter languageSize = new StringCounter();
 
-	static InpxIndexStatistic empty() {
-		return InpxIndexStatistic.builder().build();
+	static InpxIndexStatistic of(List<InpFileRecord> records) {
+		StringCounter language = new StringCounter();
+		StringCounter languageSize = new StringCounter();
+		records.forEach(
+			r -> {
+				language.increment(r.lang());
+				languageSize.increment(r.lang(), r.fileSize());
+				LOG.trace("record: {} ", r);
+			}
+		);
+		return InpxIndexStatistic.builder()
+			.language(language)
+			.languageSize(languageSize)
+			.build();
 	}
 
-	long languageCount(String lang) {
+	private long languageCount(String lang) {
 		return language.get(lang);
 	}
 
-	long languageCountExceptOf(String... languages) {
+	private long languageCountExceptOf(String... languages) {
 		return languageSummaryExceptOf(language, languages);
 	}
 
-	long languageSizeExceptOf(String... languages) {
+	private long languageSizeExceptOf(String... languages) {
 		return languageSummaryExceptOf(languageSize, languages);
 	}
 
@@ -41,34 +55,26 @@ public class InpxIndexStatistic {
 			.sum();
 	}
 
-	long totalSize() {
+	private long totalSize() {
 		return languageSize.keys().stream()
 			.mapToLong(lang -> languageSize.get(lang))
 			.sum();
 	}
 
-	long totalCount() {
+	private long totalCount() {
 		return language.keys().stream()
 			.mapToLong(lang -> language.get(lang))
 			.sum();
 	}
 
-	Set<String> languages() {
+	private Set<String> languages() {
 		return language.keys();
 	}
 
-	long languageSize(String lang) {
+	private long languageSize(String lang) {
 		return languageSize.get(lang);
 	}
 
-	void merge(InpxIndexStatistic subStatistic) {
-		subStatistic.languages().forEach(
-			lang -> {
-				language.increment(lang, subStatistic.languageCount(lang));
-				languageSize.increment(lang, subStatistic.languageSize(lang));
-			}
-		);
-	}
 
 	public void print() {
 		LOG.info("Total statistic:");

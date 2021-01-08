@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -17,14 +16,11 @@ public class InpxFile {
 		this.fileName = fileName;
 	}
 
-	public InpxIndexStatistic statistic() throws IOException {
-		InpxIndexStatistic statistic = InpxIndexStatistic.empty();
-		InpxBookInstances bookInstances = new InpxBookInstances();
-
+	public synchronized InpxIndex index() throws IOException {
+		InpxIndex index = new InpxIndex();
 		try (ZipFile zf = new ZipFile(fileName)) {
 
 			LOG.trace("Inspecting contents of: {}", zf.getName());
-
 
 			Enumeration<? extends ZipEntry> zipEntries = zf.entries();
 			while (zipEntries.hasMoreElements()) {
@@ -32,11 +28,11 @@ public class InpxFile {
 
 				LOG.trace(
 					"[{} {}] {}",
-						file.isDirectory() ? "directory" : "file",
-						new BytesValue(
-							file.getSize()
-						).shortString(),
-						file.getName()
+					file.isDirectory() ? "directory" : "file",
+					new BytesValue(
+						file.getSize()
+					).shortString(),
+					file.getName()
 				);
 
 				if (file.getName().endsWith(".info")) {
@@ -44,31 +40,17 @@ public class InpxFile {
 					continue;
 				}
 
-				InpxSubIndex subIndex = new InpxSubIndexFile(
-					new InpxSubIndexFileInputStream(
+				try (
+					InpxSubIndexFileInputStream inpFileStream = new InpxSubIndexFileInputStream(
 						zf.getInputStream(file)
 					)
-				).index();
-				InpxIndexStatistic subStatistic = subIndex.statistic();
-				bookInstances.merge(subIndex.bookInstances());
-
-				statistic.merge(subStatistic);
+				) {
+					index.put(
+						inpFileStream.records()
+					);
+				}
 			}
-
-			Set<String> duplicatesIdSet = bookInstances.duplicatesNaturalIdSet();
-			LOG.info(
-				"Book duplicates: {}, size: {}",
-					duplicatesIdSet.size(),
-					new BytesValue(
-						duplicatesIdSet.stream()
-							.mapToLong(
-								id -> bookInstances.getByNaturalId(id).stream()
-										.mapToLong(InpxSubIndexFileRecord::fileSize).max().orElse(0)
-							)
-							.sum()
-					).shortString()
-			);
 		}
-		return statistic;
+		return index;
 	}
 }
