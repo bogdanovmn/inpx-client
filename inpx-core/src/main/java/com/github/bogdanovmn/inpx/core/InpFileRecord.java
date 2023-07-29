@@ -2,10 +2,8 @@ package com.github.bogdanovmn.inpx.core;
 
 import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import lombok.Value;
+import org.apache.commons.codec.digest.DigestUtils;
 
-import javax.xml.bind.DatatypeConverter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,16 +20,6 @@ public class InpFileRecord {
 	String naturalBookId;
 	List<String> genres;
 
-	private static MessageDigest MD5;
-
-	static {
-		try {
-			MD5 = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
 	InpFileRecord(String line) {
 		String[] fields = line.split(FIELDS_DELIMITER);
 		// [Кларк,Артур,Чарльз:, sf_social:sf:, Город и звезды, , 0, 27181, 903309, 27181, 1, fb2, 2007-06-28, ru]
@@ -44,11 +32,7 @@ public class InpFileRecord {
 		lang = fields.length > 11
 			? fields[11].toLowerCase().split("-")[0]
 			: "<unknown>";
-		naturalBookId = DatatypeConverter.printHexBinary(
-			MD5.digest(
-				(author + title + lang).getBytes()
-			)
-		);
+		naturalBookId = DigestUtils.md5Hex(author + title + lang);
 	}
 
 	@Override
