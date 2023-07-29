@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class InpxIndex {
-	private List<InpFileRecord> books = new ArrayList<>();
+	private final List<InpFileRecord> books = new ArrayList<>();
 
 	void put(List<InpFileRecord> books) {
 		this.books.addAll(books);
@@ -26,10 +26,9 @@ public class InpxIndex {
 				Collectors.groupingBy(
 					InpFileRecord::naturalBookId
 				)
-			).entrySet().stream()
-				.filter(book -> book.getValue().size() > 1)
-				.map(Map.Entry::getValue)
-				.collect(Collectors.toList());
+			).values().stream()
+				.filter(inpFileRecords -> inpFileRecords.size() > 1)
+				.toList();
 
 		LOG.info(
 			"Book duplicates: {}, size: {}",

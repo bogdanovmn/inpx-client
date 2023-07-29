@@ -7,6 +7,7 @@ import com.github.bogdanovmn.inpx.core.InpFileRecord;
 import com.github.bogdanovmn.inpx.core.InpxFile;
 import com.github.bogdanovmn.inpx.core.InpxIndex;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,51 +53,62 @@ public class App {
 					).index();
 
 					if (cmdLine.hasOption(CMD_OPTION__EXPORT_BY_ID)) {
-						new BookStorage(
-							cmdLine.getOptionValue(CMD_OPTION__ARCHIVE_DIR)
-						).export(
-							Integer.parseInt(
-								cmdLine.getOptionValue(CMD_OPTION__EXPORT_BY_ID)
-							),
-							cmdLine.getOptionValue(CMD_OPTION__EXPORT_TO)
-						);
+						exportToFile(cmdLine);
 					}
 					else if (cmdLine.hasOption(CMD_OPTION__SEARCH_TITLE_TERM) || cmdLine.hasOption(CMD_OPTION__SEARCH_AUTHOR_TERM)) {
-						List<InpFileRecord> books = index.search(
-							cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM),
-							cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM)
-						);
-						books.stream()
-							.collect(Collectors.groupingBy(InpFileRecord::author))
-							.entrySet().stream()
-								.sorted(
-									Collections.reverseOrder(
-										Comparator.comparingInt(e -> e.getValue().size())
-									)
-								)
-								.forEach(e ->
-									System.out.printf("%s%n\t%s%n",
-										e.getKey(),
-										e.getValue().stream()
-											.sorted(Comparator.comparing(InpFileRecord::title))
-											.map(book ->
-												String.format("%7d [%2s %6s] %s %s%n",
-													book.fileId(),
-													book.lang(),
-													new BytesValue(book.fileSize()).shortString(),
-													book.title(),
-													book.genres()
-												)
-											)
-											.collect(Collectors.joining("\t"))
-									)
-								);
-					}
+                        searchBooks(cmdLine, index);
+                    }
 					else {
-						index.statistic().print();
-						index.printDuplicates();
-					}
+                        showStatistic(index);
+                    }
 				}
 			).build().run();
 	}
+
+    private static void showStatistic(InpxIndex index) {
+        index.statistic().print();
+        index.printDuplicates();
+    }
+
+    private static void searchBooks(CommandLine cmdLine, InpxIndex index) {
+        index.search(
+            cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM),
+            cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM)
+        ).stream()
+            .collect(Collectors.groupingBy(InpFileRecord::author))
+            .entrySet().stream()
+                .sorted(
+                    Collections.reverseOrder(
+                        Comparator.comparingInt(e -> e.getValue().size())
+                    )
+                )
+                .forEach(e ->
+                    System.out.printf("%s%n\t%s%n",
+                        e.getKey(),
+                        e.getValue().stream()
+                            .sorted(Comparator.comparing(InpFileRecord::title))
+                            .map(book ->
+                                String.format("%7d [%2s %6s] %s %s%n",
+                                    book.fileId(),
+                                    book.lang(),
+                                    new BytesValue(book.fileSize()).shortString(),
+                                    book.title(),
+                                    book.genres()
+                                )
+                            )
+                            .collect(Collectors.joining("\t"))
+                    )
+                );
+    }
+
+    private static void exportToFile(CommandLine cmdLine) {
+        new BookStorage(
+            cmdLine.getOptionValue(CMD_OPTION__ARCHIVE_DIR)
+        ).export(
+            Integer.parseInt(
+                cmdLine.getOptionValue(CMD_OPTION__EXPORT_BY_ID)
+            ),
+            cmdLine.getOptionValue(CMD_OPTION__EXPORT_TO)
+        );
+    }
 }
