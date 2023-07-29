@@ -19,6 +19,7 @@ public class App {
 	private final static String CMD_OPTION__INDEX_FILE         = "index-file";
 	private final static String CMD_OPTION__SEARCH_TITLE_TERM  = "search-title";
 	private final static String CMD_OPTION__SEARCH_AUTHOR_TERM = "search-author";
+	private final static String CMD_OPTION__SEARCH_FUZZY       = "search-fuzzy";
 	private final static String CMD_OPTION__ARCHIVE_DIR        = "archive-dir";
 	private final static String CMD_OPTION__EXPORT_BY_ID       = "export-book-by-id";
 	private final static String CMD_OPTION__EXPORT_TO          = "export-to";
@@ -32,6 +33,7 @@ public class App {
 			.withRequiredArg(CMD_OPTION__INDEX_FILE,         "an index file name")
 			.withArg        (CMD_OPTION__SEARCH_TITLE_TERM,  "a search query title term")
 			.withArg        (CMD_OPTION__SEARCH_AUTHOR_TERM, "a search query author term")
+			.withFlag       (CMD_OPTION__SEARCH_FUZZY,       "enable fuzzy search method (default: false)")
 			.withArg        (CMD_OPTION__ARCHIVE_DIR,        "an archive directory path")
 			.withArg        (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
 			.withArg        (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
@@ -73,7 +75,8 @@ public class App {
     private static void searchBooks(CommandLine cmdLine, InpxIndex index) {
         index.search(
             cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM),
-            cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM)
+            cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM),
+            cmdLine.hasOption(CMD_OPTION__SEARCH_FUZZY)
         ).stream()
             .collect(Collectors.groupingBy(InpFileRecord::author))
             .entrySet().stream()
