@@ -20,6 +20,14 @@
 			<groupId>com.github.bogdanovmn.inpx.core</groupId>
 			<artifactId>inpx-core</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.github.bogdanovmn.inpx</groupId>
+            <artifactId>inpx-search-simple</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.bogdanovmn.inpx</groupId>
+            <artifactId>inpx-search-lucene</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.github.bogdanovmn.cmdline</groupId>
 			<artifactId>cmdline-app</artifactId>

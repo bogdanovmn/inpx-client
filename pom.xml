@@ -12,10 +12,13 @@
 	<modules>
 		<module>inpx-core</module>
 		<module>inpx-cli</module>
+        <module>inpx-search-core</module>
+        <module>inpx-search-simple</module>
+        <module>inpx-search-lucene</module>
 	</modules>
 
 	<properties>
-		<revision>0.0.1</revision>
+		<revision>0.1.0</revision>
 		<encoding>UTF-8</encoding>
 		<java.version>17</java.version>
 	</properties>
@@ -30,6 +33,21 @@
 				<artifactId>inpx-core</artifactId>
 				<version>${revision}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.github.bogdanovmn.inpx</groupId>
+                <artifactId>inpx-search-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.bogdanovmn.inpx</groupId>
+                <artifactId>inpx-search-simple</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.bogdanovmn.inpx</groupId>
+                <artifactId>inpx-search-lucene</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
 			<!-- My Libs -->
 
