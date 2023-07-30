@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>inpx</artifactId>
-		<groupId>com.github.bogdanovmn.inpx</groupId>
-		<version>${revision}</version>
-	</parent>
+    <parent>
+        <artifactId>inpx</artifactId>
+        <groupId>com.github.bogdanovmn.inpx</groupId>
+        <version>${revision}</version>
+    </parent>
 
-	<groupId>com.github.bogdanovmn.inpx.cli</groupId>
-	<artifactId>inpx-cli</artifactId>
-	<version>${revision}</version>
-	<packaging>jar</packaging>
+    <groupId>com.github.bogdanovmn.inpx.cli</groupId>
+    <artifactId>inpx-cli</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.github.bogdanovmn.inpx.core</groupId>
-			<artifactId>inpx-core</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.bogdanovmn.inpx.core</groupId>
+            <artifactId>inpx-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.github.bogdanovmn.inpx</groupId>
             <artifactId>inpx-search-simple</artifactId>
@@ -28,39 +28,39 @@
             <groupId>com.github.bogdanovmn.inpx</groupId>
             <artifactId>inpx-search-lucene</artifactId>
         </dependency>
-		<dependency>
-			<groupId>com.github.bogdanovmn.cmdline</groupId>
-			<artifactId>cmdline-app</artifactId>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.github.bogdanovmn.cmdline</groupId>
+            <artifactId>cmdline-app</artifactId>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<finalName>inpx-tool</finalName>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<appendAssemblyId>false</appendAssemblyId>
-					<archive>
-						<manifest>
-							<mainClass>com.github.bogdanovmn.inpx.cli.App</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-				<executions>
-					<execution>
-						<id>uber-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <finalName>inpx-tool</finalName>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.github.bogdanovmn.inpx.cli.App</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>uber-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
