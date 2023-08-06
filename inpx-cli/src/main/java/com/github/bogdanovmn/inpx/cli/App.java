@@ -98,6 +98,7 @@ public class App {
             inpxFile,
             SearchEngine.Config.builder()
                 .indexUrl(cmdLine.getOptionValue(CMD_OPTION__SEARCH_ENGINE_URL))
+                .maxResults(Integer.parseInt(cmdLine.getOptionValue(CMD_OPTION__SEARCH_MAX_RESULTS)))
             .build()
         );
         if (engine instanceof LuceneSearchEngine luceneEngine && cmdLine.hasOption(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX)) {
