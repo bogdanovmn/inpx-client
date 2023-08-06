@@ -31,6 +31,8 @@ public class App {
     private static final String CMD_OPTION__EXPORT_BY_ID               = "export-book-by-id";
     private static final String CMD_OPTION__EXPORT_TO                  = "export-to";
 
+    private static final int MAX_RESULTS_DEFAULT = 30;
+
     public static void main(String[] args) throws Exception {
 
         new CmdLineAppBuilder(args)
@@ -45,7 +47,7 @@ public class App {
             .withArg        (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
             .withArg        (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
             .withArg        (CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
-            .withArg        (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results (default: 30")
+            .withArg        (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results (default: %s)".formatted(MAX_RESULTS_DEFAULT))
             .withFlag       (CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
             .withDependencies(
                 CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX,
@@ -98,46 +100,46 @@ public class App {
             inpxFile,
             SearchEngine.Config.builder()
                 .indexUrl(cmdLine.getOptionValue(CMD_OPTION__SEARCH_ENGINE_URL))
-                .maxResults(Integer.parseInt(cmdLine.getOptionValue(CMD_OPTION__SEARCH_MAX_RESULTS)))
+                .maxResults(Integer.parseInt(cmdLine.getOptionValue(CMD_OPTION__SEARCH_MAX_RESULTS, String.valueOf(MAX_RESULTS_DEFAULT))))
             .build()
         );
         if (engine instanceof LuceneSearchEngine luceneEngine && cmdLine.hasOption(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX)) {
             luceneEngine.createIndex();
         }
-        engine.search(
-            SearchQuery.builder()
-                .author(
-                    cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM)
+        SearchQuery query = SearchQuery.builder()
+            .author(cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM))
+            .title(cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM))
+        .build();
+
+        if (query.applicable()) {
+            engine.search(query).collect(
+                    Collectors.groupingBy(InpFileRecord::author)
+                ).entrySet().stream()
+                .sorted(
+                    Collections.reverseOrder(
+                        Comparator.comparingInt(e -> e.getValue().size())
+                    )
                 )
-                .title(
-                    cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM)
-                )
-            .build()
-        ).collect(
-            Collectors.groupingBy(InpFileRecord::author)
-        ).entrySet().stream()
-            .sorted(
-                Collections.reverseOrder(
-                    Comparator.comparingInt(e -> e.getValue().size())
-                )
-            )
-            .forEach(e ->
-                System.out.printf("%s%n\t%s%n",
-                    e.getKey(),
-                    e.getValue().stream()
-                        .sorted(Comparator.comparing(InpFileRecord::title))
-                        .map(book ->
-                            String.format("%7d [%2s %6s] %s %s%n",
-                                book.fileId(),
-                                book.lang(),
-                                new BytesValue(book.fileSize()).shortString(),
-                                book.title(),
-                                book.genres()
+                .forEach(e ->
+                    System.out.printf("%s%n\t%s%n",
+                        e.getKey(),
+                        e.getValue().stream()
+                            .sorted(Comparator.comparing(InpFileRecord::title))
+                            .map(book ->
+                                String.format("%7d [%2s %6s] %s %s%n",
+                                    book.fileId(),
+                                    book.lang(),
+                                    new BytesValue(book.fileSize()).shortString(),
+                                    book.title(),
+                                    book.genres()
+                                )
                             )
-                        )
-                        .collect(Collectors.joining("\t"))
-                )
-            );
+                            .collect(Collectors.joining("\t"))
+                    )
+                );
+        } else {
+            throw new IllegalArgumentException("Input search terms are not applicable. Min term length is 3. %s".formatted(query.toString()));
+        }
     }
 
     private static void exportToFile(CommandLine cmdLine) {
