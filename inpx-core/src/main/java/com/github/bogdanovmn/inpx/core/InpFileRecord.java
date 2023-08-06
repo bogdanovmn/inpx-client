@@ -4,13 +4,14 @@ import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import lombok.Value;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
 @Value
-public class InpFileRecord {
-	private final static String FIELDS_DELIMITER = "\\x04";
-	private final static String FIELD_VALUE_DELIMITER = ":";
+public class InpFileRecord implements Serializable {
+    private static final String FIELDS_DELIMITER = "\\x04";
+    private static final String FIELD_VALUE_DELIMITER = ":";
 
 	long fileId;
 	long fileSize;
