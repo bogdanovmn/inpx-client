@@ -1,6 +1,6 @@
 package com.github.bogdanovmn.inpx.cli;
 
-import com.github.bogdanovmn.inpx.core.InpxIndex;
+import com.github.bogdanovmn.inpx.core.InpxFile;
 import com.github.bogdanovmn.inpx.search.core.SearchEngine;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
 import com.github.bogdanovmn.inpx.search.simple.FuzzySearchEngine;
@@ -33,12 +33,12 @@ enum SearchEngineMethod {
         throw new IllegalArgumentException("Invalid method name: %s".formatted(rawName));
     }
 
-    SearchEngine engineInstance(InpxIndex index) {
+    SearchEngine engineInstance(InpxFile indexFile, SearchEngine.Config config) {
         try {
-            return searchEngineClass.getConstructor(InpxIndex.class).newInstance(index);
+            return searchEngineClass.getConstructor(InpxFile.class, SearchEngine.Config.class).newInstance(indexFile, config);
         } catch (Exception ex) {
             throw new IllegalStateException(
-                "%s must have a constructor with a single InpxIndex.class argument".formatted(searchEngineClass),
+                "%s must have a constructor with arguments: (InpxIndex.class, SearchEngine.Config.class)".formatted(searchEngineClass),
                 ex
             );
         }

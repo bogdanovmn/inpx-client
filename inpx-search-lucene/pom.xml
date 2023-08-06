@@ -13,6 +13,10 @@
     <artifactId>inpx-search-lucene</artifactId>
     <version>${revision}</version>
 
+    <properties>
+        <lucene.version>9.7.0</lucene.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.github.bogdanovmn.inpx</groupId>
@@ -21,8 +25,16 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>9.7.0</version>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
     </dependencies>
-
 </project>

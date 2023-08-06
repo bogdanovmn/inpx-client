@@ -1,14 +1,23 @@
 package com.github.bogdanovmn.inpx.search.core;
 
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
-import com.github.bogdanovmn.inpx.core.InpxIndex;
+import com.github.bogdanovmn.inpx.core.InpxFile;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-abstract public class SearchEngine {
-    protected final InpxIndex index;
+public abstract class SearchEngine {
+    protected final InpxFile inpxFile;
+    protected final Config config;
 
-    abstract public Stream<InpFileRecord> search(SearchQuery query);
+    public abstract Stream<InpFileRecord> search(SearchQuery query);
+
+    @Value
+    @Builder
+    public static class Config {
+        String indexUrl;
+    }
 }
