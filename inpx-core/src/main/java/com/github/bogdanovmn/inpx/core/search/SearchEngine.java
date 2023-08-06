@@ -1,4 +1,4 @@
-package com.github.bogdanovmn.inpx.search.core;
+package com.github.bogdanovmn.inpx.core.search;
 
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
 import com.github.bogdanovmn.inpx.core.InpxFile;
@@ -19,5 +19,7 @@ public abstract class SearchEngine {
     @Builder
     public static class Config {
         String indexUrl;
+        @Builder.Default
+        int maxResults = 30;
     }
 }

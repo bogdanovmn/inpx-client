@@ -12,8 +12,6 @@
     <modules>
         <module>inpx-core</module>
         <module>inpx-cli</module>
-        <module>inpx-search-core</module>
-        <module>inpx-search-simple</module>
         <module>inpx-search-lucene</module>
     </modules>
 
@@ -29,18 +27,8 @@
             <!-- Modules -->
 
             <dependency>
-                <groupId>com.github.bogdanovmn.inpx.core</groupId>
+                <groupId>com.github.bogdanovmn.inpx</groupId>
                 <artifactId>inpx-core</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.bogdanovmn.inpx</groupId>
-                <artifactId>inpx-search-core</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.bogdanovmn.inpx</groupId>
-                <artifactId>inpx-search-simple</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

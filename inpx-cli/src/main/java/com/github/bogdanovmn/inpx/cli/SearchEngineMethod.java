@@ -1,10 +1,10 @@
 package com.github.bogdanovmn.inpx.cli;
 
 import com.github.bogdanovmn.inpx.core.InpxFile;
-import com.github.bogdanovmn.inpx.search.core.SearchEngine;
+import com.github.bogdanovmn.inpx.core.search.SearchEngine;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
-import com.github.bogdanovmn.inpx.search.simple.FuzzySearchEngine;
-import com.github.bogdanovmn.inpx.search.simple.SimpleSearchEngine;
+import com.github.bogdanovmn.inpx.core.search.FuzzySearchEngine;
+import com.github.bogdanovmn.inpx.core.search.SimpleSearchEngine;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

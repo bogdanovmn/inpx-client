@@ -6,8 +6,8 @@ import com.github.bogdanovmn.inpx.core.BookStorage;
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
 import com.github.bogdanovmn.inpx.core.InpxFile;
 import com.github.bogdanovmn.inpx.core.InpxIndex;
-import com.github.bogdanovmn.inpx.search.core.SearchEngine;
-import com.github.bogdanovmn.inpx.search.core.SearchQuery;
+import com.github.bogdanovmn.inpx.core.search.SearchEngine;
+import com.github.bogdanovmn.inpx.core.search.SearchQuery;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
@@ -25,8 +25,9 @@ public class App {
     private static final String CMD_OPTION__SEARCH_AUTHOR_TERM         = "search-author-term";
     private static final String CMD_OPTION__SEARCH_ENGINE              = "search-engine";
     private static final String CMD_OPTION__ARCHIVE_DIR                = "archive-dir";
-    private static final String CMD_OPTION__SEARCH_ENGINE_URL = "search-engine-dir";
+    private static final String CMD_OPTION__SEARCH_ENGINE_URL          = "search-engine-dir";
     private static final String CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX = "search-engine-create-index";
+    private static final String CMD_OPTION__SEARCH_MAX_RESULTS         = "search-max-results";
     private static final String CMD_OPTION__EXPORT_BY_ID               = "export-book-by-id";
     private static final String CMD_OPTION__EXPORT_TO                  = "export-to";
 
@@ -44,6 +45,7 @@ public class App {
             .withArg        (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
             .withArg        (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
             .withArg        (CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
+            .withArg        (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results (default: 30")
             .withFlag       (CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
             .withDependencies(
                 CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX,

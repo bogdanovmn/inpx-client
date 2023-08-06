@@ -1,9 +1,7 @@
-package com.github.bogdanovmn.inpx.search.simple;
+package com.github.bogdanovmn.inpx.core.search;
 
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
 import com.github.bogdanovmn.inpx.core.InpxFile;
-import com.github.bogdanovmn.inpx.search.core.SearchEngine;
-import com.github.bogdanovmn.inpx.search.core.SearchQuery;
 
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -21,7 +19,7 @@ public class FuzzySearchEngine extends SearchEngine {
                     (!query.hasTitle() || new StringMatching(book.title(), query.title()).partialContains())
                     &&
                     (!query.hasAuthor() || new StringMatching(book.author(), query.author()).partialContains())
-                );
+                ).limit(config.maxResults());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

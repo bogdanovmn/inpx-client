@@ -2,8 +2,8 @@ package com.github.bogdanovmn.inpx.search.lucene;
 
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
 import com.github.bogdanovmn.inpx.core.InpxFile;
-import com.github.bogdanovmn.inpx.search.core.SearchEngine;
-import com.github.bogdanovmn.inpx.search.core.SearchQuery;
+import com.github.bogdanovmn.inpx.core.search.SearchEngine;
+import com.github.bogdanovmn.inpx.core.search.SearchQuery;
 import com.github.bogdanovmn.inpx.search.lucene.common.FuzzyPhraseQuery;
 import com.github.bogdanovmn.inpx.search.lucene.common.FuzzyPhraseQuery.FuzzyPhrase;
 import com.github.bogdanovmn.inpx.search.lucene.common.FuzzyPhraseQuery.FuzzyPhraseQueryBuilder;
@@ -91,7 +91,7 @@ public class LuceneSearchEngine extends SearchEngine {
                     FuzzyPhrase.of(DOCUMENT_FIELD_AUTHOR, input.author())
                 );
             }
-            TopDocs hits = searcher.search(queryBuilder.build().query(), 10);
+            TopDocs hits = searcher.search(queryBuilder.build().query(), config.maxResults());
             StoredFields storedFields = searcher.storedFields();
             List<InpFileRecord> result = new LinkedList<>();
             for (ScoreDoc hit : hits.scoreDocs) {

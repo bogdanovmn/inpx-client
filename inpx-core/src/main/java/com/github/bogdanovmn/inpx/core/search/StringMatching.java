@@ -1,4 +1,4 @@
-package com.github.bogdanovmn.inpx.search.simple;
+package com.github.bogdanovmn.inpx.core.search;
 
 class StringMatching {
     private final String normalizedTarget;

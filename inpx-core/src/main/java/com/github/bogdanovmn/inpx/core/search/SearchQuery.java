@@ -1,4 +1,4 @@
-package com.github.bogdanovmn.inpx.search.core;
+package com.github.bogdanovmn.inpx.core.search;
 
 import lombok.Builder;
 import lombok.Value;
