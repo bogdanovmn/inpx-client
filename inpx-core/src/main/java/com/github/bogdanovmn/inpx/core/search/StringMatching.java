@@ -1,30 +1,41 @@
 package com.github.bogdanovmn.inpx.core.search;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 class StringMatching {
-    private final String normalizedTarget;
+    private final Set<String> normalizedTargets;
     private final String normalizedSearchTerm;
 
     private static final String TOKEN_SEPARATOR = " ";
 
     StringMatching(String target, String searchTerm) {
-        this.normalizedTarget = searchNormalization(target);
+        this.normalizedTargets = Set.of(searchNormalization(target));
+        this.normalizedSearchTerm = searchNormalization(searchTerm);
+    }
+
+    StringMatching(Set<String> targets, String searchTerm) {
+        this.normalizedTargets = targets.stream()
+            .map(StringMatching::searchNormalization)
+            .collect(Collectors.toUnmodifiableSet());
         this.normalizedSearchTerm = searchNormalization(searchTerm);
     }
 
     boolean contains() {
-        return normalizedTarget.contains(normalizedSearchTerm);
+        return normalizedTargets.stream()
+            .anyMatch(t -> t.contains(normalizedSearchTerm));
     }
 
     boolean partialContains() {
-        boolean contains = false;
         String[] tokens = normalizedSearchTerm.split(TOKEN_SEPARATOR);
-        for (String token : tokens) {
-            if (token.length() > 2 && normalizedTarget.contains(token)) {
-                contains = true;
-                break;
+        for (String target : normalizedTargets) {
+            for (String token : tokens) {
+                if (token.length() > 2 && target.contains(token)) {
+                    return true;
+                }
             }
         }
-        return contains;
+        return false;
     }
 
     private static String searchNormalization(String value) {

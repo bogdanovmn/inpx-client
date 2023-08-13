@@ -18,7 +18,7 @@ public class SimpleSearchEngine extends SearchEngine {
                 .filter(book ->
                     (!query.hasTitle() || new StringMatching(book.title(), query.title()).contains())
                     &&
-                    (!query.hasAuthor() || new StringMatching(book.author(), query.author()).contains())
+                    (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).contains())
                 ).limit(config.maxResults());
         } catch (IOException e) {
             throw new RuntimeException(e);

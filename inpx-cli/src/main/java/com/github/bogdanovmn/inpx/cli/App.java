@@ -113,7 +113,7 @@ public class App {
 
         if (query.applicable()) {
             engine.search(query).collect(
-                    Collectors.groupingBy(InpFileRecord::author)
+                    Collectors.groupingBy(InpFileRecord::authors)
                 ).entrySet().stream()
                 .sorted(
                     Collections.reverseOrder(

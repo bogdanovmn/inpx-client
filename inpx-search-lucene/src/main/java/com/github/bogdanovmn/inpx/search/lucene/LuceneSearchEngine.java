@@ -57,8 +57,10 @@ public class LuceneSearchEngine extends SearchEngine {
                 document.add(
                     new TextField(DOCUMENT_FIELD_TITLE, book.title(), Field.Store.NO)
                 );
-                document.add(
-                    new TextField(DOCUMENT_FIELD_AUTHOR, book.author(), Field.Store.NO)
+                book.authors().forEach(author ->
+                    document.add(
+                        new TextField(DOCUMENT_FIELD_AUTHOR, author, Field.Store.NO)
+                    )
                 );
                 document.add(
                     new StoredField(DOCUMENT_FIELD_DATA, SerializationUtils.serialize(book))

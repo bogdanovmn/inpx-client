@@ -18,7 +18,7 @@ public class FuzzySearchEngine extends SearchEngine {
                 .filter(book ->
                     (!query.hasTitle() || new StringMatching(book.title(), query.title()).partialContains())
                     &&
-                    (!query.hasAuthor() || new StringMatching(book.author(), query.author()).partialContains())
+                    (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).partialContains())
                 ).limit(config.maxResults());
         } catch (IOException e) {
             throw new RuntimeException(e);
