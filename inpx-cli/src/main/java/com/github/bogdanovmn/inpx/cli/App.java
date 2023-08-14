@@ -1,6 +1,7 @@
 package com.github.bogdanovmn.inpx.cli;
 
 import com.github.bogdanovmn.cmdline.CmdLineAppBuilder;
+import com.github.bogdanovmn.cmdline.ParsedOptions;
 import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import com.github.bogdanovmn.inpx.core.BookStorage;
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
@@ -10,10 +11,8 @@ import com.github.bogdanovmn.inpx.core.search.SearchEngine;
 import com.github.bogdanovmn.inpx.core.search.SearchQuery;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.CommandLine;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -37,18 +36,25 @@ public class App {
 
         new CmdLineAppBuilder(args)
             .withJarName("inpx-tool")
-            .withDescription("INPX file analyzing")
+            .withDescription("INPX file browser")
 
-            .withRequiredArg(CMD_OPTION__INDEX_FILE,         "an index file name")
-            .withArg        (CMD_OPTION__SEARCH_TITLE_TERM,  "a search query title term")
-            .withArg        (CMD_OPTION__SEARCH_AUTHOR_TERM, "a search query author term")
-            .withArg        (CMD_OPTION__SEARCH_ENGINE,      "search engine: [%s], default: %s".formatted(enumValues(SearchEngineMethod.class), SearchEngineMethod.defaultValue().name()))
-            .withArg        (CMD_OPTION__ARCHIVE_DIR,        "an archive directory path")
-            .withArg        (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
-            .withArg        (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
-            .withArg        (CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
-            .withArg        (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results (default: %s)".formatted(MAX_RESULTS_DEFAULT))
-            .withFlag       (CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
+            .withArg(CMD_OPTION__INDEX_FILE, "an index file name")
+                .required()
+
+            .withEnumArg(CMD_OPTION__SEARCH_ENGINE, "search engine", SearchEngineMethod.class)
+                .withDefault(SearchEngineMethod.defaultValue())
+
+            .withIntArg (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results")
+                .withDefault(MAX_RESULTS_DEFAULT)
+
+            .withArg    (CMD_OPTION__SEARCH_TITLE_TERM,  "a search query title term")
+            .withArg    (CMD_OPTION__SEARCH_AUTHOR_TERM, "a search query author term")
+            .withArg    (CMD_OPTION__ARCHIVE_DIR,        "an archive directory path")
+            .withIntArg (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
+            .withArg    (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
+            .withArg    (CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
+            .withFlag   (CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
+
             .withDependencies(
                 CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX,
                     CMD_OPTION__SEARCH_ENGINE_URL
@@ -65,26 +71,20 @@ public class App {
                 CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX
             )
             .withEntryPoint(
-                cmdLine -> {
+                options -> {
                     InpxFile index = new InpxFile(
-                        cmdLine.getOptionValue(CMD_OPTION__INDEX_FILE)
+                        options.get(CMD_OPTION__INDEX_FILE)
                     );
 
-                    if (cmdLine.hasOption(CMD_OPTION__EXPORT_BY_ID)) {
-                        exportToFile(cmdLine);
-                    } else if (cmdLine.hasOption(CMD_OPTION__SEARCH_TITLE_TERM) || cmdLine.hasOption(CMD_OPTION__SEARCH_AUTHOR_TERM)) {
-                        searchBooks(cmdLine, index);
+                    if (options.has(CMD_OPTION__EXPORT_BY_ID)) {
+                        exportToFile(options);
+                    } else if (options.has(CMD_OPTION__SEARCH_TITLE_TERM) || options.has(CMD_OPTION__SEARCH_AUTHOR_TERM)) {
+                        searchBooks(options, index);
                     } else {
                         showStatistic(index);
                     }
                 }
             ).build().run();
-    }
-
-    private static <E extends Enum<E>> String enumValues(Class<E> enumClass) {
-        return Arrays.stream(enumClass.getEnumConstants())
-            .map(Enum::name)
-            .collect(Collectors.joining(" | "));
     }
 
     private static void showStatistic(InpxFile inpxFile) throws IOException {
@@ -93,22 +93,22 @@ public class App {
         index.printDuplicates();
     }
 
-    private static void searchBooks(CommandLine cmdLine, InpxFile inpxFile) throws IOException {
+    private static void searchBooks(ParsedOptions options, InpxFile inpxFile) throws IOException {
         SearchEngine engine = SearchEngineMethod.orDefault(
-            cmdLine.getOptionValue(CMD_OPTION__SEARCH_ENGINE)
+            options.getEnumAsRawString(CMD_OPTION__SEARCH_ENGINE)
         ).engineInstance(
             inpxFile,
             SearchEngine.Config.builder()
-                .indexUrl(cmdLine.getOptionValue(CMD_OPTION__SEARCH_ENGINE_URL))
-                .maxResults(Integer.parseInt(cmdLine.getOptionValue(CMD_OPTION__SEARCH_MAX_RESULTS, String.valueOf(MAX_RESULTS_DEFAULT))))
+                .indexUrl(options.get(CMD_OPTION__SEARCH_ENGINE_URL))
+                .maxResults(options.getInt(CMD_OPTION__SEARCH_MAX_RESULTS))
             .build()
         );
-        if (engine instanceof LuceneSearchEngine luceneEngine && cmdLine.hasOption(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX)) {
+        if (engine instanceof LuceneSearchEngine luceneEngine && options.getBool(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX)) {
             luceneEngine.createIndex();
         }
         SearchQuery query = SearchQuery.builder()
-            .author(cmdLine.getOptionValue(CMD_OPTION__SEARCH_AUTHOR_TERM))
-            .title(cmdLine.getOptionValue(CMD_OPTION__SEARCH_TITLE_TERM))
+            .author(options.get(CMD_OPTION__SEARCH_AUTHOR_TERM))
+            .title(options.get(CMD_OPTION__SEARCH_TITLE_TERM))
         .build();
 
         if (query.applicable()) {
@@ -142,14 +142,12 @@ public class App {
         }
     }
 
-    private static void exportToFile(CommandLine cmdLine) {
+    private static void exportToFile(ParsedOptions options) {
         new BookStorage(
-            cmdLine.getOptionValue(CMD_OPTION__ARCHIVE_DIR)
+            options.get(CMD_OPTION__ARCHIVE_DIR)
         ).export(
-            Integer.parseInt(
-                cmdLine.getOptionValue(CMD_OPTION__EXPORT_BY_ID)
-            ),
-            cmdLine.getOptionValue(CMD_OPTION__EXPORT_TO)
+            options.getInt(CMD_OPTION__EXPORT_BY_ID),
+            options.get(CMD_OPTION__EXPORT_TO)
         );
     }
 }
