@@ -76,7 +76,7 @@ public class LuceneSearchEngine extends SearchEngine {
     }
 
     @Override
-    public Stream<InpFileRecord> search(SearchQuery input) {
+    public Stream<InpFileRecord> search(SearchQuery input) throws IOException {
         try (
             FSDirectory directory = FSDirectory.open(Paths.get(config.indexUrl()));
             DirectoryReader reader = DirectoryReader.open(directory);
@@ -103,8 +103,6 @@ public class LuceneSearchEngine extends SearchEngine {
                 );
             }
             return result.stream();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
         }
 
     }

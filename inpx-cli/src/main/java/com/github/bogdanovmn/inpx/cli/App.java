@@ -11,10 +11,12 @@ import com.github.bogdanovmn.inpx.core.search.SearchEngine;
 import com.github.bogdanovmn.inpx.core.search.SearchQuery;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.index.IndexNotFoundException;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.github.bogdanovmn.inpx.cli.SearchEngineMethod.SIMPLE;
@@ -75,6 +77,16 @@ public class App {
                 OPT_SHOW_STATISTIC
             )
 
+            .withMutualExclusions(
+                OPT_EXPORT_BY_ID,
+                OPT_SEARCH_ENGINE_CREATE_INDEX,
+                OPT_SHOW_STATISTIC,
+                List.of(
+                    OPT_SEARCH_AUTHOR_TERM,
+                    OPT_SEARCH_TITLE_TERM
+                )
+            )
+
             .withEntryPoint(
                 options -> {
                     InpxFile booksIndex = new InpxFile(options.get(OPT_INDEX_FILE));
@@ -93,7 +105,8 @@ public class App {
                             SearchQuery.builder()
                                 .author(options.get(OPT_SEARCH_AUTHOR_TERM))
                                 .title(options.get(OPT_SEARCH_TITLE_TERM))
-                            .build());
+                            .build()
+                        );
                     }
                 }
             ).build().run();
@@ -120,40 +133,49 @@ public class App {
         if (engine instanceof LuceneSearchEngine luceneEngine) {
             luceneEngine.createIndex();
         } else {
-            throw new IllegalArgumentException("Search index creation support is only for Lucene engine");
+            throw new IllegalArgumentException(
+                "Search index creation support is only for Lucene engine. Use '%s' to specify it"
+                    .formatted(OPT_SEARCH_ENGINE)
+            );
         }
     }
 
-    private static void searchBooks(SearchEngine engine, SearchQuery query) {
+    private static void searchBooks(SearchEngine engine, SearchQuery query) throws IOException {
         if (!query.applicable()) {
             throw new IllegalArgumentException("Input search terms are not applicable. Min term length is 3. %s".formatted(query.toString()));
         }
-
-        engine.search(query).collect(
-                Collectors.groupingBy(InpFileRecord::authors)
-            ).entrySet().stream()
-            .sorted(
-                Collections.reverseOrder(
-                    Comparator.comparingInt(e -> e.getValue().size())
+        try {
+            engine.search(query).collect(
+                    Collectors.groupingBy(InpFileRecord::authors)
+                ).entrySet().stream()
+                .sorted(
+                    Collections.reverseOrder(
+                        Comparator.comparingInt(e -> e.getValue().size())
+                    )
                 )
-            )
-            .forEach(e ->
-                System.out.printf("%s%n\t%s%n",
-                    e.getKey(),
-                    e.getValue().stream()
-                        .sorted(Comparator.comparing(InpFileRecord::title))
-                        .map(book ->
-                            String.format("%7d [%2s %6s] %s %s%n",
-                                book.fileId(),
-                                book.lang(),
-                                new BytesValue(book.fileSize()).shortString(),
-                                book.title(),
-                                book.genres()
+                .forEach(e ->
+                    System.out.printf("%s%n\t%s%n",
+                        e.getKey(),
+                        e.getValue().stream()
+                            .sorted(Comparator.comparing(InpFileRecord::title))
+                            .map(book ->
+                                String.format("%7d [%2s %6s] %s %s%n",
+                                    book.fileId(),
+                                    book.lang(),
+                                    new BytesValue(book.fileSize()).shortString(),
+                                    book.title(),
+                                    book.genres()
+                                )
                             )
-                        )
-                        .collect(Collectors.joining("\t"))
-                )
+                            .collect(Collectors.joining("\t"))
+                    )
+                );
+        } catch (IndexNotFoundException ex) {
+            System.out.printf(
+                "ERROR! Lucene index is not found. You have to create it using the '%s' option%n",
+                    OPT_SEARCH_ENGINE_CREATE_INDEX
             );
+        }
     }
 
     private static void exportToFile(ParsedOptions options) {

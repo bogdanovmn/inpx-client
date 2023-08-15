@@ -12,16 +12,12 @@ public class FuzzySearchEngine extends SearchEngine {
     }
 
     @Override
-    public Stream<InpFileRecord> search(SearchQuery query) {
-        try {
-            return inpxFile.index().books()
-                .filter(book ->
-                    (!query.hasTitle() || new StringMatching(book.title(), query.title()).partialContains())
-                    &&
-                    (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).partialContains())
-                ).limit(config.maxResults());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public Stream<InpFileRecord> search(SearchQuery query) throws IOException {
+        return inpxFile.index().books()
+            .filter(book ->
+                (!query.hasTitle() || new StringMatching(book.title(), query.title()).partialContains())
+                &&
+                (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).partialContains())
+            ).limit(config.maxResults());
     }
 }

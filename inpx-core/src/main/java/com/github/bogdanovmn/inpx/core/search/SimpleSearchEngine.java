@@ -12,16 +12,12 @@ public class SimpleSearchEngine extends SearchEngine {
     }
 
     @Override
-    public Stream<InpFileRecord> search(SearchQuery query) {
-        try {
-            return inpxFile.index().books()
-                .filter(book ->
-                    (!query.hasTitle() || new StringMatching(book.title(), query.title()).contains())
-                    &&
-                    (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).contains())
-                ).limit(config.maxResults());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public Stream<InpFileRecord> search(SearchQuery query) throws IOException {
+        return inpxFile.index().books()
+            .filter(book ->
+                (!query.hasTitle() || new StringMatching(book.title(), query.title()).contains())
+                &&
+                (!query.hasAuthor() || new StringMatching(book.authors(), query.author()).contains())
+            ).limit(config.maxResults());
     }
 }
