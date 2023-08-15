@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
+import static com.github.bogdanovmn.inpx.cli.SearchEngineMethod.SIMPLE;
+
 @Slf4j
 public class App {
     private static final String CMD_OPTION__INDEX_FILE                 = "index-file";
@@ -42,28 +44,25 @@ public class App {
                 .required()
 
             .withEnumArg(CMD_OPTION__SEARCH_ENGINE, "search engine", SearchEngineMethod.class)
-                .withDefault(SearchEngineMethod.defaultValue())
+                .withDefault(SIMPLE)
 
-            .withIntArg (CMD_OPTION__SEARCH_MAX_RESULTS, "search max results")
+            .withIntArg(CMD_OPTION__SEARCH_MAX_RESULTS, "search max results")
                 .withDefault(MAX_RESULTS_DEFAULT)
 
-            .withArg    (CMD_OPTION__SEARCH_TITLE_TERM,  "a search query title term")
-            .withArg    (CMD_OPTION__SEARCH_AUTHOR_TERM, "a search query author term")
-            .withArg    (CMD_OPTION__ARCHIVE_DIR,        "an archive directory path")
-            .withIntArg (CMD_OPTION__EXPORT_BY_ID,       "export FB2 file by id")
-            .withArg    (CMD_OPTION__EXPORT_TO,          "export FB2 file target directory")
-            .withArg    (CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
-            .withFlag   (CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
-
-            .withDependencies(
-                CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX,
-                    CMD_OPTION__SEARCH_ENGINE_URL
-            )
-            .withDependencies(
-                CMD_OPTION__EXPORT_BY_ID,
+            .withIntArg(CMD_OPTION__EXPORT_BY_ID, "export FB2 file by id")
+                .requires(
                     CMD_OPTION__EXPORT_TO,
                     CMD_OPTION__ARCHIVE_DIR
-            )
+                )
+            .withArg(CMD_OPTION__ARCHIVE_DIR, "an archive directory path")
+            .withArg(CMD_OPTION__EXPORT_TO,   "export FB2 file target directory")
+
+            .withArg(CMD_OPTION__SEARCH_TITLE_TERM,  "a search query title term")
+            .withArg(CMD_OPTION__SEARCH_AUTHOR_TERM, "a search query author term")
+            .withArg(CMD_OPTION__SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
+            .withFlag(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
+                .requires(CMD_OPTION__SEARCH_ENGINE_URL)
+
             .withAtLeastOneRequiredOption(
                 CMD_OPTION__EXPORT_BY_ID,
                 CMD_OPTION__SEARCH_AUTHOR_TERM,
@@ -94,15 +93,14 @@ public class App {
     }
 
     private static void searchBooks(ParsedOptions options, InpxFile inpxFile) throws IOException {
-        SearchEngine engine = SearchEngineMethod.orDefault(
-            options.getEnumAsRawString(CMD_OPTION__SEARCH_ENGINE)
-        ).engineInstance(
-            inpxFile,
-            SearchEngine.Config.builder()
-                .indexUrl(options.get(CMD_OPTION__SEARCH_ENGINE_URL))
-                .maxResults(options.getInt(CMD_OPTION__SEARCH_MAX_RESULTS))
-            .build()
-        );
+        SearchEngine engine = ((SearchEngineMethod) options.getEnum(CMD_OPTION__SEARCH_ENGINE))
+            .engineInstance(
+                inpxFile,
+                SearchEngine.Config.builder()
+                    .indexUrl(options.get(CMD_OPTION__SEARCH_ENGINE_URL))
+                    .maxResults(options.getInt(CMD_OPTION__SEARCH_MAX_RESULTS))
+                .build()
+            );
         if (engine instanceof LuceneSearchEngine luceneEngine && options.getBool(CMD_OPTION__SEARCH_ENGINE_CREATE_INDEX)) {
             luceneEngine.createIndex();
         }
