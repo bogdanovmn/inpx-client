@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
 
 @Value
 class BookStorageArchiveFile {
-	private final static Pattern FILE_NAME_PATTERN = Pattern.compile("^fb2-(\\d+)-(\\d+).zip$");
-	Path path;
+	private final static Pattern FILE_NAME_PATTERN = Pattern.compile("^fb2-(\\d+)-(\\d+)(_lost)?.zip$");
+
+    Path path;
 	int firstId;
 	int lastId;
 
@@ -25,8 +26,7 @@ class BookStorageArchiveFile {
 			this.lastId = Integer.parseInt(
 				fileNameMatcher.group(2)
 			);
-		}
-		else {
+		} else {
 			throw new IllegalArgumentException(fileName + " doesn't match the pattern");
 		}
 	}

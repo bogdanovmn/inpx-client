@@ -1,7 +1,5 @@
 package com.github.bogdanovmn.inpx.cli;
 
-import com.github.bogdanovmn.cmdline.CmdLineAppBuilder;
-import com.github.bogdanovmn.cmdline.ParsedOptions;
 import com.github.bogdanovmn.humanreadablevalues.BytesValue;
 import com.github.bogdanovmn.inpx.core.BookStorage;
 import com.github.bogdanovmn.inpx.core.InpFileRecord;
@@ -10,6 +8,8 @@ import com.github.bogdanovmn.inpx.core.InpxIndex;
 import com.github.bogdanovmn.inpx.core.search.SearchEngine;
 import com.github.bogdanovmn.inpx.core.search.SearchQuery;
 import com.github.bogdanovmn.inpx.search.lucene.LuceneSearchEngine;
+import com.github.bogdanovmn.jaclin.CLI;
+import com.github.bogdanovmn.jaclin.ParsedOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.IndexNotFoundException;
 
@@ -40,62 +40,57 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
-        new CmdLineAppBuilder(args)
-            .withJarName("inpx-tool")
-            .withDescription("INPX file browser")
+        new CLI("inpx-tool", "INPX file browser")
+            .withRequiredOptions()
+                .strArg(OPT_INDEX_FILE, "an index file name")
 
-            .withArg(OPT_INDEX_FILE, "an index file name")
-                .required()
+            .withOptions()
+                .enumArg(OPT_SEARCH_ENGINE, "search engine", SearchEngineMethod.class)
+                    .withDefault(SIMPLE)
 
-            .withEnumArg(OPT_SEARCH_ENGINE, "search engine", SearchEngineMethod.class)
-                .withDefault(SIMPLE)
+                .intArg(OPT_SEARCH_MAX_RESULTS, "search max results")
+                    .withDefault(MAX_RESULTS_DEFAULT)
 
-            .withIntArg(OPT_SEARCH_MAX_RESULTS, "search max results")
-                .withDefault(MAX_RESULTS_DEFAULT)
+                .intArg(OPT_EXPORT_BY_ID, "export FB2 file by id")
+                    .requires(OPT_EXPORT_TO, OPT_ARCHIVE_DIR)
+                .strArg(OPT_ARCHIVE_DIR, "an archive directory path")
+                .strArg(OPT_EXPORT_TO, "export FB2 file target directory")
 
-            .withIntArg(OPT_EXPORT_BY_ID, "export FB2 file by id")
-                .requires(
-                    OPT_EXPORT_TO,
-                    OPT_ARCHIVE_DIR
-                )
-            .withArg(OPT_ARCHIVE_DIR, "an archive directory path")
-            .withArg(OPT_EXPORT_TO,   "export FB2 file target directory")
+                .strArg(OPT_SEARCH_TITLE_TERM, "a search query title term")
+                .strArg(OPT_SEARCH_AUTHOR_TERM, "a search query author term")
+                .strArg(OPT_SEARCH_ENGINE_URL, "search engine index directory (only for Lucene engine)")
+                .flag(OPT_SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
+                    .requires(OPT_SEARCH_ENGINE_URL)
 
-            .withArg(OPT_SEARCH_TITLE_TERM,  "a search query title term")
-            .withArg(OPT_SEARCH_AUTHOR_TERM, "a search query author term")
-            .withArg(OPT_SEARCH_ENGINE_URL,  "search engine index directory (only for Lucene engine)")
-            .withFlag(OPT_SEARCH_ENGINE_CREATE_INDEX, "create search index (only for Lucene engine)")
-                .requires(OPT_SEARCH_ENGINE_URL)
+                .flag(OPT_SHOW_STATISTIC, "show books statistic")
 
-            .withFlag(OPT_SHOW_STATISTIC, "show books statistic")
-
-            .withAtLeastOneRequiredOption(
-                OPT_EXPORT_BY_ID,
-                OPT_SEARCH_AUTHOR_TERM,
-                OPT_SEARCH_TITLE_TERM,
-                OPT_SEARCH_ENGINE_CREATE_INDEX,
-                OPT_SHOW_STATISTIC
-            )
-
-            .withMutualExclusions(
-                OPT_EXPORT_BY_ID,
-                OPT_SEARCH_ENGINE_CREATE_INDEX,
-                OPT_SHOW_STATISTIC,
-                List.of(
+            .withRestrictions()
+                .atLeastOneShouldBeUsed(
+                    OPT_EXPORT_BY_ID,
                     OPT_SEARCH_AUTHOR_TERM,
-                    OPT_SEARCH_TITLE_TERM
+                    OPT_SEARCH_TITLE_TERM,
+                    OPT_SEARCH_ENGINE_CREATE_INDEX,
+                    OPT_SHOW_STATISTIC
                 )
-            )
+                .mutualExclusions(
+                    OPT_EXPORT_BY_ID,
+                    OPT_SEARCH_ENGINE_CREATE_INDEX,
+                    OPT_SHOW_STATISTIC,
+                    List.of(
+                        OPT_SEARCH_AUTHOR_TERM,
+                        OPT_SEARCH_TITLE_TERM
+                    )
+                )
 
             .withEntryPoint(
                 options -> {
                     InpxFile booksIndex = new InpxFile(options.get(OPT_INDEX_FILE));
 
-                    if (options.getBool(OPT_SHOW_STATISTIC)) {
+                    if (options.enabled(OPT_SHOW_STATISTIC)) {
                         showStatistic(booksIndex);
                     } else if (options.has(OPT_EXPORT_BY_ID)) {
                         exportToFile(options);
-                    } else if (options.getBool(OPT_SEARCH_ENGINE_CREATE_INDEX)) {
+                    } else if (options.enabled(OPT_SEARCH_ENGINE_CREATE_INDEX)) {
                         createLuceneIndex(
                             searchEngine(options, booksIndex)
                         );
@@ -105,11 +100,11 @@ public class App {
                             SearchQuery.builder()
                                 .author(options.get(OPT_SEARCH_AUTHOR_TERM))
                                 .title(options.get(OPT_SEARCH_TITLE_TERM))
-                            .build()
+                                .build()
                         );
                     }
                 }
-            ).build().run();
+            ).run(args);
     }
 
     private static void showStatistic(InpxFile inpxFile) throws IOException {

@@ -40,9 +40,9 @@
             <!-- My Libs -->
 
             <dependency>
-                <groupId>com.github.bogdanovmn.cmdline</groupId>
-                <artifactId>cmdline-app</artifactId>
-                <version>3.1.0</version>
+                <groupId>com.github.bogdanovmn.jaclin</groupId>
+                <artifactId>jaclin</artifactId>
+                <version>4.0.2</version>
             </dependency>
             <dependency>
                 <groupId>com.github.bogdanovmn.humanreadablevalues</groupId>
